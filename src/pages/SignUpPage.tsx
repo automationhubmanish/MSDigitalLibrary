@@ -4,9 +4,11 @@ import { api } from '../lib'
 export function SignUpPage({
   onCreated,
   onCancel,
+  requiresEmail = false,
 }: {
-  onCreated: (userId: string) => void
+  onCreated: (userId: string, confirmEmail?: boolean) => void
   onCancel: () => void
+  requiresEmail?: boolean
 }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -28,12 +30,13 @@ export function SignUpPage({
           setBusy(true)
           setError('')
           try {
-            const result = await api<{ userId: string }>('/api/signup', {
+            const result = await api<{ userId: string; confirmEmail?: boolean }>('/api/signup', {
               name: data.get('name'),
               userId: data.get('userId'),
               password: data.get('password'),
+              ...(requiresEmail ? { email: data.get('email') } : {}),
             })
-            onCreated(result.userId)
+            onCreated(result.userId, result.confirmEmail)
           } catch (e) {
             setError((e as Error).message)
           } finally {
@@ -42,6 +45,13 @@ export function SignUpPage({
         }}
       >
         <fieldset disabled={busy}>
+          {requiresEmail && (
+            <label>
+              Email address
+              <input name="email" type="email" autoComplete="email" required maxLength={254} />
+              <span className="helper">We’ll send an email to confirm your account.</span>
+            </label>
+          )}
           <label>
             Full name
             <input

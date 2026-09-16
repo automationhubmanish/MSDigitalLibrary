@@ -1,6 +1,8 @@
 # Deploying MS Digital Library
 
-The app needs a Node server and persistent storage. Static-only hosting such as GitHub Pages cannot run the API/database. A single Linux VM or container host with a persistent volume is sufficient. You will also need a domain or a hosting-provided HTTPS URL.
+For the requested **Vercel + Supabase** deployment, follow [Cloud deployment](CLOUD_DEPLOYMENT.md). It includes the PostgreSQL migration, local record import and Supabase Auth setup.
+
+The instructions below cover the alternative local/VM SQLite backend. It needs a Node server and persistent storage. Static-only hosting such as GitHub Pages cannot run this API/database. A single Linux VM or container host with a persistent volume is sufficient.
 
 ## Local login details
 

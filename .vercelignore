@@ -1,0 +1,17 @@
+.git
+.agents
+.codex
+.env
+.env.*
+node_modules
+data
+backups
+*.sqlite*
+tests
+test-results
+playwright-report
+artifacts
+docs
+scripts
+supabase
+*.log

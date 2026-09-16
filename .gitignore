@@ -19,6 +19,10 @@ data/
 test-results/
 playwright-report/
 artifacts/
+.vercel/
+.supabase/
+supabase/.temp/
+supabase/.branches/
 
 # Editor directories and files
 .vscode/*

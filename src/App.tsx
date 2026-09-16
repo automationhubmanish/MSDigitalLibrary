@@ -50,7 +50,11 @@ function App() {
   const [state, setState] = useState<LibraryState | null>(null)
   const [loading, setLoading] = useState(true)
   const [demo, setDemo] = useState(false)
-  const [publicInfo, setPublicInfo] = useState<{ name: string; plans: Plan[] }>({
+  const [publicInfo, setPublicInfo] = useState<{
+    name: string
+    plans: Plan[]
+    requiresEmail?: boolean
+  }>({
     name: 'MS Digital Library',
     plans: [],
   })
@@ -78,10 +82,10 @@ function App() {
   }, [])
   const signedIn = !!state
   useEffect(() => {
-    void api<{ demo: boolean; name: string; plans: Plan[] }>('/api/config')
+    void api<{ demo: boolean; name: string; plans: Plan[]; requiresEmail?: boolean }>('/api/config')
       .then((c) => {
         setDemo(c.demo)
-        setPublicInfo({ name: c.name, plans: c.plans })
+        setPublicInfo({ name: c.name, plans: c.plans, requiresEmail: c.requiresEmail })
       })
       .catch(() => setError('Cannot connect to the server. Start the app with npm run dev.'))
     void Promise.resolve().then(refresh)
@@ -113,7 +117,11 @@ function App() {
     try {
       const next = await api<LibraryState>('/api/actions', { revision: state?.revision, action })
       setState(next)
-      setPublicInfo({ name: next.settings.name, plans: next.plans.filter((p) => !p.archived) })
+      setPublicInfo((previous) => ({
+        ...previous,
+        name: next.settings.name,
+        plans: next.plans.filter((p) => !p.archived),
+      }))
       setSynced(new Date())
       setError('')
       setToast(message)

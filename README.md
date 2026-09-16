@@ -1,6 +1,6 @@
 # MS Digital Library
 
-A library owner workspace built with React, TypeScript, Vite, Express, and SQLite. The interface follows the seven supplied dashboard references. This is a study-seat library management app, with students and monthly memberships rather than a book catalogue.
+A library owner workspace built with React, TypeScript, Vite and Express. Local development uses SQLite; the Vercel deployment uses Supabase PostgreSQL and Supabase Auth. The interface follows the seven supplied dashboard references. This is a study-seat library management app, with students and monthly memberships rather than a book catalogue.
 
 ## Run locally
 
@@ -61,6 +61,10 @@ Future layout reductions show affected assignments and require the owner to expl
 
 ## Real workspace and deployment
 
+**Vercel + Supabase:** follow [Cloud deployment](docs/CLOUD_DEPLOYMENT.md) to configure accounts, copy the current local records and publish. `npm run cloud:check` reports missing settings; `npm run cloud:setup` imports data and applies the owner details from `config/owner.json`. Passwords and service keys remain outside Git. Cloud deployment is pending account access.
+
+For the alternative local/VM SQLite deployment:
+
 Copy `.env.example` to `.env`, set an owner email and a unique password of at least 12 characters, set `DEMO_MODE=false`, and choose a **new** database path such as `./data/production.sqlite`. Restart the app. A new real workspace starts empty. A sample database cannot be opened as a real workspace by simply changing the demo flag.
 
 Optional `STAFF_EMAIL` and `STAFF_PASSWORD` enable a separate staff account. Staff can manage student records, attendance, and fees. Only the owner can change plans/settings or export the complete database snapshot. Both roles can read operational records and download operational reports. Sessions last 12 hours.
@@ -116,4 +120,4 @@ tests/              Domain/API tests and browser workflow tests
 docs/DEPLOYMENT.md   Hosting and operating instructions
 ```
 
-SQLite is provided by Node's built-in `node:sqlite` module; Node may display an experimental-feature warning. The database stores one transactional library document with optimistic revision checks, which is suitable for a small, single-library installation. Use one server instance with persistent local storage; horizontal/serverless scaling needs a different database deployment architecture.
+SQLite is provided by Node's built-in `node:sqlite` module; Node may display an experimental-feature warning. The local database stores one transactional library document with optimistic revision checks and requires one server instance with persistent local storage. The separate `server/cloud/` backend uses PostgreSQL transactions and the same membership rules. `api/index.js` is its Vercel entry point; `supabase/migrations/` defines the cloud schema.

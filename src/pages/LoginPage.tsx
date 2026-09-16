@@ -10,7 +10,7 @@ export function LoginPage({
   error,
   onLogin,
 }: {
-  publicInfo: { name: string; plans: Plan[] }
+  publicInfo: { name: string; plans: Plan[]; requiresEmail?: boolean }
   demo: boolean
   error: string
   onLogin: () => Promise<void>
@@ -20,6 +20,7 @@ export function LoginPage({
   const [signup, setSignup] = useState(false)
   const [userId, setUserId] = useState('')
   const [created, setCreated] = useState(false)
+  const [confirmEmail, setConfirmEmail] = useState(false)
   const login = async (body: unknown) => {
     setBusy(true)
     setLocalError('')
@@ -63,8 +64,10 @@ export function LoginPage({
         <div className="login-card">
           {signup ? (
             <SignUpPage
+              requiresEmail={publicInfo.requiresEmail}
               onCancel={() => setSignup(false)}
-              onCreated={(id) => {
+              onCreated={(id, confirm) => {
+                setConfirmEmail(!!confirm)
                 setUserId(id)
                 setCreated(true)
                 setSignup(false)
@@ -80,8 +83,11 @@ export function LoginPage({
               <p>Sign in to your library workspace.</p>
               {created && (
                 <p className="alert success" role="status">
-                  Account created. Sign in with your user ID. The owner will activate your library
-                  access.
+                  Account created.{' '}
+                  {confirmEmail
+                    ? 'Confirm your email, then sign in with your user ID.'
+                    : 'Sign in with your user ID.'}{' '}
+                  The owner will activate your library access.
                 </p>
               )}
               {(localError || error) && (

@@ -4,6 +4,8 @@ The supplied logo is stored unchanged at `public/ms-library-logo.png`. `src/comp
 
 ## Create an account
 
+The cloud deployment additionally requires an email address and Supabase email confirmation. See [Cloud deployment](CLOUD_DEPLOYMENT.md). The local SQLite flow below does not require email verification.
+
 On the login screen, select **New user? Create an account**. Enter your name, a unique user ID and matching passwords. User IDs are case-insensitive and allow 3–40 letters, numbers, dots, underscores or hyphens, starting with a letter or number. Passwords require 12–128 characters.
 
 Sign in using the user ID and password. New accounts can log in immediately to see their activation status. They cannot access management records until the owner assigns access.
@@ -20,6 +22,8 @@ Sign in as the owner and open **Settings → User Accounts**. Refresh the accoun
 Save access. That user must sign in again after an access change. Public sign-up never creates owner accounts, and membership links cannot be selected or changed by the registrant.
 
 ## Existing owner and staff logins
+
+For Supabase, `config/owner.json` holds the non-secret owner details and `npm run cloud:setup` applies them with `ADMIN_PASSWORD` from local `.env`. Staff signs up and is activated by the owner. Local account passwords cannot be carried across directly; imported account metadata is retained for owner reference.
 
 The current owner password remains in the local `.env` file as `ADMIN_PASSWORD`. Sign in with user ID **owner**, or continue using `ADMIN_EMAIL`. Set `ADMIN_USER_ID` to configure another ID. Optional staff credentials similarly accept **staff** (or `STAFF_USER_ID`) and `STAFF_EMAIL`.
 

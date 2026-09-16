@@ -14,18 +14,25 @@
     "test": "node --test tests/*.test.js",
     "test:e2e": "playwright test",
     "format": "prettier --write src",
-    "format:check": "prettier --check src"
+    "format:check": "prettier --check src",
+    "cloud:check": "node --env-file-if-exists=.env scripts/cloud-check.mjs",
+    "cloud:setup": "node --env-file-if-exists=.env scripts/cloud-setup.mjs --import-local",
+    "cloud:dev": "node --env-file-if-exists=.env server/cloud/local.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
+    "@vercel/functions": "^3.9.8",
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.0",
     "helmet": "^8.3.0",
     "lucide-react": "^1.45.0",
+    "pg": "^8.23.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "zod": "^4.6.4"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@playwright/test": "^1.63.0",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
