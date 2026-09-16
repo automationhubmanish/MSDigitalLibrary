@@ -1,0 +1,2 @@
+import { defineConfig } from '@playwright/test'
+export default defineConfig({ testDir: './tests/browser', workers: 1, fullyParallel: false, webServer: { command: 'node tests/browser/server.js', url: 'http://127.0.0.1:3002/api/health', reuseExistingServer: false }, use: { baseURL: 'http://127.0.0.1:3002', channel: process.env.CI ? undefined : 'chrome', reducedMotion: 'reduce', screenshot: 'only-on-failure', trace: 'retain-on-failure' }, reporter: 'list' })
