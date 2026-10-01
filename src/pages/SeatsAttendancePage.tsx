@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Clock3 } from 'lucide-react'
+import { Clock3, Armchair } from 'lucide-react'
 import { Card, Stat, Empty } from '../components'
 import { today, dateText, clockText, getSeats, activeVisit, localDay } from '../lib'
 import { useNow } from '../useNow'
@@ -91,17 +91,18 @@ export function SeatsAttendancePage({
               Available
             </span>
           </div>
+          <div className="study-hall-label"><span>STUDY HALL</span><span>{state.settings.seatRows.length} rows · {state.settings.seatsPerRow} seats per row</span></div>
           <div className="seat-map-scroll">
             <div
               className="seat-map"
-              style={{ minWidth: `${state.settings.seatsPerRow * 47 + 18}px` }}
+              style={{ minWidth: `${state.settings.seatsPerRow * 64 + 32}px` }}
             >
               {state.settings.seatRows.map((row) => (
                 <div
                   className="seat-row"
                   key={row}
                   style={{
-                    gridTemplateColumns: `10px repeat(${state.settings.seatsPerRow}, minmax(0, 1fr))`,
+                    gridTemplateColumns: `24px repeat(${state.settings.seatsPerRow}, minmax(0, 1fr))`,
                   }}
                 >
                   <span className="row-label">{row}</span>
@@ -119,7 +120,8 @@ export function SeatsAttendancePage({
                           aria-pressed={selected === seat}
                           onClick={() => setSelected(seat)}
                         >
-                          <strong>{seat.slice(2)}</strong>
+                          <Armchair size={20} aria-hidden="true" />
+                          <strong>{seat}</strong>
                           <small>{occupied ? 'In' : student ? 'Hold' : 'Free'}</small>
                         </button>
                       )
@@ -128,6 +130,7 @@ export function SeatsAttendancePage({
               ))}
             </div>
           </div>
+          <div className="hall-entrance">ENTRANCE / EXIT</div>
           <div className="seat-map-footer">
             <span>Click a seat to view its student and attendance.</span>
             <span>
@@ -205,3 +208,4 @@ export function SeatsAttendancePage({
     </>
   )
 }
+

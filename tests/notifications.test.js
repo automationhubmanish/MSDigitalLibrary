@@ -264,7 +264,7 @@ test('daily hours are configurable within plan limits and opening-day closure is
     name: 'Test Student',
     phone: '9876543210',
     planId: '6h',
-    seat: 'A-01',
+    seat: 'A1',
     startTime: '18:00',
     dailyHours: 4.5,
     joined: today(),
@@ -316,3 +316,4 @@ test('daily hours are configurable within plan limits and opening-day closure is
   )
   assert.equal(state.students[0].dailyHours, null)
 })
+

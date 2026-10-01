@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { createState, applyAction, today, monthEnd } from '../server/domain.js'
-const student = (overrides = {}) => ({ name: 'Test Student', phone: '9876543210', planId: '8h', seat: 'A-01', startTime: '08:00', joined: today(), notes: '', ...overrides })
+const student = (overrides = {}) => ({ name: 'Test Student', phone: '9876543210', planId: '8h', seat: 'A1', startTime: '08:00', joined: today(), notes: '', ...overrides })
 const add = (state, values) => applyAction(state, { type: 'student.save', student: student(values) })
 test('demo data has 84 students, 44 occupied seats, 6 reservations, and unique seat assignments', () => {
   const state = createState(true)
@@ -15,8 +15,8 @@ test('demo data has 84 students, 44 occupied seats, 6 reservations, and unique s
 test('validates duplicate seats, duplicate phones, invalid seats, and invalid times', () => {
   const state = add(createState())
   assert.throws(() => add(state, { phone: '9876543211' }), /seat is already assigned/)
-  assert.throws(() => add(state, { seat: 'B-01' }), /phone number already/)
-  assert.throws(() => add(state, { phone: '9876543211', seat: 'A-99' }), /valid seat/)
+  assert.throws(() => add(state, { seat: 'B1' }), /phone number already/)
+  assert.throws(() => add(state, { phone: '9876543211', seat: 'A99' }), /valid seat/)
   assert.throws(() => add(state, { phone: '9876543211', seat: '', startTime: '20:00' }), /past midnight/)
   assert.equal(state.students.length, 1)
 })
@@ -39,7 +39,7 @@ test('check-in requires a seat; changing an occupied seat requires check-out; ar
   state = applyAction(state, { type: 'student.save', id, student: student() })
   state = applyAction(state, { type: 'attendance.toggle', id })
   assert.equal(state.attendance.filter(a => !a.checkOut).length, 1)
-  assert.throws(() => applyAction(state, { type: 'student.save', id, student: student({ seat: 'B-01' }) }), /Check the student out/)
+  assert.throws(() => applyAction(state, { type: 'student.save', id, student: student({ seat: 'B1' }) }), /Check the student out/)
   state = applyAction(state, { type: 'student.archive', id })
   assert.equal(state.students[0].seat, '')
   assert.ok(state.attendance[0].checkOut)
@@ -51,3 +51,4 @@ test('staff cannot change plans or settings and settings reject invalid opening 
   assert.throws(() => applyAction(state, { type: 'settings.save', settings: state.settings }, 'staff'), /Only the owner/)
   assert.throws(() => applyAction(state, { type: 'settings.save', settings: { ...state.settings, weekdayOpen: '23:00' } }), /Closing time/)
 })
+

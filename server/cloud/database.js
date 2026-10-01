@@ -1,5 +1,5 @@
 import pg from 'pg'
-import { getSeats } from '../configuration.js'
+import { getSeats, migrateState } from '../configuration.js'
 
 export function createPool(env = process.env) {
   if (!env.SUPABASE_DB_URL)
@@ -47,14 +47,14 @@ export async function readState(db, lock = false) {
       { status: 503 },
     )
   const { meta, ...collections } = rows[0]
-  return { ...meta, ...collections }
+  return migrateState({ ...meta, ...collections })
 }
 export async function writeState(db, state) {
   const { plans, students, payments, attendance, ...meta } = state
   const seatRows = getSeats(state.settings).map((id) => ({
     id,
-    row: id.split('-')[0],
-    number: Number(id.split('-')[1]),
+    row: id.match(/^[A-Z]+/)[0],
+    number: Number(id.match(/\d+$/)[0]),
   }))
   await db.query(
     `INSERT INTO public.seats(id,row_label,seat_number) SELECT x->>'id',x->>'row',(x->>'number')::integer FROM jsonb_array_elements($1::jsonb) x ON CONFLICT(id) DO NOTHING`,
@@ -78,3 +78,4 @@ export async function writeState(db, state) {
     [JSON.stringify(meta)],
   )
 }
+

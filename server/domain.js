@@ -56,7 +56,7 @@ export const actionSchema = z.discriminatedUnion('type', [
 ])
 export function createState(demo = false) {
   const state = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     revision: 0,
     demo,
     audit: [],
@@ -358,3 +358,4 @@ export function applyAction(original, raw, role = 'owner') {
   state.revision++
   return state
 }
+

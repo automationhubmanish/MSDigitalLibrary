@@ -4,35 +4,35 @@ import { createState, applyAction, today } from '../server/domain.js'
 import { getSeats, migrateState } from '../server/configuration.js'
 
 function add(state, values = {}) {
-  return applyAction(state, { type: 'student.save', student: { name: 'Config Student', phone: '9876543201', planId: '8h', seat: 'A-09', startTime: '08:00', joined: '2020-01-01', notes: '', ...values } })
+  return applyAction(state, { type: 'student.save', student: { name: 'Config Student', phone: '9876543201', planId: '8h', seat: 'A9', startTime: '08:00', joined: '2020-01-01', notes: '', ...values } })
 }
 test('default configuration is exactly 54 unique seats and rejects a tenth seat', () => {
   const state = createState(), seats = getSeats(state.settings)
   assert.equal(seats.length, 54)
   assert.equal(new Set(seats).size, 54)
-  assert.equal(seats[0], 'A-01'); assert.equal(seats.at(-1), 'F-09')
-  assert.throws(() => add(state, { seat: 'A-10' }), /valid seat/)
+  assert.equal(seats[0], 'A1'); assert.equal(seats.at(-1), 'F9')
+  assert.throws(() => add(state, { seat: 'A10' }), /valid seat/)
 })
 test('legacy migration unassigns removed seats, closes affected visits, retains history, and runs once', () => {
   const legacy = add(createState())
   delete legacy.schemaVersion
-  legacy.students[0].seat = 'A-12'
-  legacy.attendance.push({ id: 'old-visit', studentId: legacy.students[0].id, seat: 'A-12', checkIn: new Date(Date.now() - 3600000).toISOString(), checkOut: null })
+  legacy.students[0].seat = 'A12'
+  legacy.attendance.push({ id: 'old-visit', studentId: legacy.students[0].id, seat: 'A12', checkIn: new Date(Date.now() - 3600000).toISOString(), checkOut: null })
   const migrated = migrateState(legacy)
   assert.equal(migrated.students.length, legacy.students.length)
   assert.equal(migrated.students[0].seat, '')
   assert.equal(migrated.attendance.length, 1)
   assert.ok(migrated.attendance[0].closedByLayoutChange)
   assert.ok(migrated.attendance[0].checkOut)
-  assert.equal(migrated.attendance[0].seat, 'A-12')
-  assert.equal(migrated.layoutNotice.released[0].oldSeat, 'A-12')
-  assert.equal(legacy.students[0].seat, 'A-12')
+  assert.equal(migrated.attendance[0].seat, 'A12')
+  assert.equal(migrated.layoutNotice.released[0].oldSeat, 'A12')
+  assert.equal(legacy.students[0].seat, 'A12')
   assert.equal(migrateState(migrated), migrated)
 })
 test('layout expansion enables new seats; shrinking requires explicit release and keeps student history', () => {
   let state = createState()
   state = applyAction(state, { type: 'settings.save', settings: { ...state.settings, seatsPerRow: 10 } })
-  state = add(state, { seat: 'F-10' })
+  state = add(state, { seat: 'F10' })
   state = applyAction(state, { type: 'attendance.toggle', id: state.students[0].id })
   const action = { type: 'settings.save', settings: { ...state.settings, seatsPerRow: 9 } }
   assert.throws(() => applyAction(state, action), /Confirm releasing/)
@@ -40,7 +40,7 @@ test('layout expansion enables new seats; shrinking requires explicit release an
   assert.equal(next.students[0].seat, '')
   assert.ok(next.attendance[0].checkOut)
   assert.equal(next.students.length, 1)
-  assert.equal(state.students[0].seat, 'F-10')
+  assert.equal(state.students[0].seat, 'F10')
 })
 test('owner can edit a receipt, void it, and restore it with validation and an audit trail', () => {
   let state = add(createState())
@@ -63,7 +63,7 @@ test('attendance corrections validate overlap and check-out order, and record th
   let state = add(createState())
   const studentId = state.students[0].id
   const checkIn = new Date(Date.now() - 7200000).toISOString(), checkOut = new Date(Date.now() - 3600000).toISOString()
-  const action = { type: 'attendance.save', reason: 'Missed register entry', attendance: { studentId, seat: 'A-09', checkIn, checkOut, note: 'Verified by owner' } }
+  const action = { type: 'attendance.save', reason: 'Missed register entry', attendance: { studentId, seat: 'A9', checkIn, checkOut, note: 'Verified by owner' } }
   state = applyAction(state, action)
   assert.equal(state.attendance.length, 1)
   assert.throws(() => applyAction(state, action), /overlaps/)
@@ -90,4 +90,20 @@ test('owner-configured prices, hours, payment methods, and archived membership r
   assert.ok(state.plans[0].archived)
   state = applyAction(state, { type: 'plan.restore', id: '6h' })
   assert.equal(state.plans[0].archived, false)
+})
+
+
+test('version 2 seat labels migrate without changing active attendance or payments', () => {
+  const legacy = add(createState())
+  legacy.schemaVersion = 2
+  legacy.students[0].seat = 'A-09'
+  legacy.attendance.push({id: 'live', studentId: legacy.students[0].id, seat: 'A-09', checkIn: new Date().toISOString(), checkOut: null})
+  const next = migrateState(legacy)
+  assert.equal(next.schemaVersion, 3)
+  assert.equal(next.students[0].seat, 'A9')
+  assert.equal(next.attendance[0].seat, 'A9')
+  assert.equal(next.attendance[0].checkOut, null)
+  assert.deepEqual(next.payments, legacy.payments)
+  assert.equal(legacy.students[0].seat, 'A-09')
+  assert.equal(migrateState(next), next)
 })

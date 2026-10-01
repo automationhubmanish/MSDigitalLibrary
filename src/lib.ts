@@ -34,7 +34,7 @@ export const getSeats = (settings: Settings) =>
   settings.seatRows.flatMap((row) =>
     Array.from(
       { length: Math.max(0, Math.min(30, settings.seatsPerRow)) },
-      (_, i) => `${row}-${String(i + 1).padStart(2, '0')}`,
+      (_, i) => `${row}${i + 1}`,
     ),
   )
 export const reminderMessage = (state: LibraryState, student: Student) => {
@@ -98,3 +98,4 @@ export function downloadCsv(name: string, headers: string[], rows: (string | num
   a.click()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
+

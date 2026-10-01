@@ -62,7 +62,7 @@ export const getSeats = (settings) =>
   settings.seatRows.flatMap((row) =>
     Array.from(
       { length: settings.seatsPerRow },
-      (_, i) => `${row}-${String(i + 1).padStart(2, '0')}`,
+      (_, i) => `${row}${i + 1}`,
     ),
   )
 
@@ -71,13 +71,15 @@ export function reconcileLayout(state, reason, timestamp = new Date().toISOStrin
   const valid = new Set(getSeats(state.settings))
   const released = []
   for (const student of state.students) {
-    if (student.seat && !valid.has(student.seat)) {
+    const normalized = String(student.seat || '').replace(/^([A-Z])-0?(\d+)$/, (_, row, n) => row + Number(n))
+    if (student.seat && !valid.has(normalized)) {
       released.push({ studentId: student.id, name: student.name, oldSeat: student.seat })
       student.seat = ''
     }
   }
   for (const visit of state.attendance) {
-    if (!visit.checkOut && !valid.has(visit.seat)) {
+    const normalized = String(visit.seat || '').replace(/^([A-Z])-0?(\d+)$/, (_, row, n) => row + Number(n))
+    if (!visit.checkOut && !valid.has(normalized)) {
       visit.checkOut = timestamp
       visit.note = reason
       visit.closedByLayoutChange = true
@@ -86,7 +88,7 @@ export function reconcileLayout(state, reason, timestamp = new Date().toISOStrin
   return released
 }
 
-export function migrateState(original) {
+function migrateLegacyLayout(original) {
   if (original.schemaVersion >= 2) return original
   const state = structuredClone(original)
   state.settings = settingsSchema.parse({
@@ -118,6 +120,26 @@ export function migrateState(original) {
     released,
   })
   state.schemaVersion = 2
+  state.revision++
+  return state
+}
+
+
+// Rename legacy labels without releasing seats or closing active visits.
+export function migrateState(original) {
+  if (original.schemaVersion >= 3) return original
+  const layout = migrateLegacyLayout(original)
+  const state = structuredClone(layout)
+  const rename = (label) => {
+    const match = String(label || '').match(/^([A-Z])-0?(\d+)$/)
+    return match ? `${match[1]}${Number(match[2])}` : label
+  }
+  for (const student of state.students) student.seat = rename(student.seat)
+  for (const visit of state.attendance) visit.seat = rename(visit.seat)
+  const date = new Date().toISOString()
+  state.audit = state.audit || []
+  state.audit.unshift({id: `seat-labels-${date}`, date, role: 'system', type: 'seat.labels.migration', reason: 'Seat labels updated from A-01 to A1. Assignments and attendance retained.'})
+  state.schemaVersion = 3
   state.revision++
   return state
 }
