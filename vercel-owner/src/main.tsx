@@ -1,0 +1,1 @@
+import {createRoot} from 'react-dom/client';import OwnerWorkspace from './owner-workspace';import './globals.css';createRoot(document.getElementById('root')!).render(<OwnerWorkspace/>);
